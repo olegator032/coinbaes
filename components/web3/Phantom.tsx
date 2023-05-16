@@ -1,79 +1,71 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from "react";
 import { Button } from "@chakra-ui/react";
 import { shortenAddress } from "../../utils/shortenAddress";
-import Link from "next/link";
-
 
 export const PhantomConnect = () => {
   // State
   const [walletAddress, setWalletAddress] = useState(null);
-  
+  const { solana } = window;
 
   // Actions
   const checkIfWalletIsConnected = async () => {
-    if (window?.solana?.isPhantom) {
-      console.log('Phantom wallet found!');
-      const response = await window.solana.connect({ onlyIfTrusted: true });
-      console.log(
-        'Connected with Public Key:',
-        response.publicKey.toString()
-      );
-      /*
-       * Set the user's publicKey in state to be used later!
-       */
-      setWalletAddress(response.publicKey.toString());
+    if (solana?.isPhantom) {
+      console.log("Phantom wallet found!");
+      try {
+        const response = await solana.connect({ onlyIfTrusted: true });
+        console.log(
+          "Connected with Public Key:",
+          response.publicKey.toString()
+        );
+        /*
+         * Set the user's publicKey in state to be used later!
+         */
+        setWalletAddress(response.publicKey.toString());
+      } catch (error) {
+        console.error("Failed to connect to solana");
+      }
     } else {
-      alert('Solana object not found! Get a Phantom Wallet 👻');
+      alert("Solana object not found! Get a Phantom Wallet 👻");
     }
   };
 
   const connectWallet = async () => {
-    const { solana } = window;
-  
     if (solana) {
       const response = await solana.connect();
-      console.log('Connected with Public Key:', response.publicKey.toString());
+      console.log("Connected with Public Key:", response.publicKey.toString());
       setWalletAddress(response.publicKey.toString());
     }
   };
 
-  const renderNotConnectedContainer = () => (
-    <button
-      className="cta-button connect-wallet-button"
-      onClick={connectWallet}
-    >
-      Connect to Wallet
-    </button>
-  );
-
+  const disconnectWallet = async () => {
+    alert("Disconnecting from your wallet");
+    if (solana) {
+      // After asking if user want to disconnect -> await solana.disconnect();
+      // setWalletAddress(null);
+      // Check if solana is null too
+    }
+  };
 
   // UseEffects
   useEffect(() => {
     const onLoad = async () => {
       await checkIfWalletIsConnected();
     };
-    window.addEventListener('load', onLoad);
-    return () => window.removeEventListener('load', onLoad);
+    window.addEventListener("load", onLoad);
+    return () => window.removeEventListener("load", onLoad);
   }, []);
 
-    if(!walletAddress) {
-        return (<Button className="Wallet" style={{
-        fontFamily: "'Press Start 2P', cursive",
+  return (
+    <Button
+      className="Wallet"
+      style={{
+        fontFamily: `'Press Start 2P', cursive`,
         color: "#4b4f56",
         borderRadius: "0",
-      }} >
-			{renderNotConnectedContainer()}
-       </Button>)
-}
-    else { 
-            return (
-                <Link href="/mint" passHref>
-            <Button className="Wallet" style={{
-        fontFamily: "'Press Start 2P', cursive",
-        color: "#4b4f56",
-        borderRadius: "0",
-    }} >
-        {shortenAddress(walletAddress)}
-   </Button>
-   </Link>)}
-}
+      }}
+      onClick={!walletAddress ? connectWallet : disconnectWallet}
+    >
+      {!walletAddress ? "Connect to Wallet" : shortenAddress(walletAddress)}
+    </Button>
+  );
+};
