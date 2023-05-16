@@ -5,5 +5,5 @@
 // see https://nextjs.org/docs/basic-features/typescript for more information.
 
 interface Window {
-    solana: any
+  solana: any; // Replace 'any' with the appropriate type for the 'solana' object
 }
